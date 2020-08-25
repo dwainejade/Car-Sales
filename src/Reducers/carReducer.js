@@ -1,3 +1,6 @@
+export const ADD_FEATURE = 'ADD_FEATURE';
+export const REMOVE_FEATURE = 'REMOVE_FEATURE';
+
 export const initialState = {
     additionalPrice: 0,
     car: {
@@ -15,46 +18,28 @@ export const initialState = {
     ]
 };
 
-
-export const carReducer = (state = initialState, action) => {
+const carReducer = (state = initialState, action) => {
     switch (action.type) {
-        case "ADD_FEATURE":
-            const additionalFeature = { ...action.payload, disabled: true };
+        case ADD_FEATURE:
+            //action.payload = feature object
             return {
                 ...state,
-                additionalPrice: state.additionalPrice + additionalFeature.price,
-                car: {
-                    ...state.car,
-                    features: [...state.car.features, additionalFeature],
+                car: {...state.car, features: [...state.car.features, action.payload]},
+                additionalFeatures: state.additionalFeatures.filter(feature => feature.id !== action.payload.id),
+                additionalPrice: state.additionalPrice + action.payload.price
+            };
+        case REMOVE_FEATURE:
+            return {
+                ...state,
+                car: {...state.car, 
+                    features: state.car.features.filter(feature => feature.id !== action.payload.id)
                 },
-                additionalFeatures: state.additionalFeatures.map((feature) => {
-                    if (action.payload.id === feature.id) {
-                        return { ...feature, disabled: true };
-                    } else {
-                        return feature;
-                    }
-                }),
+                additionalFeatures: [...state.additionalFeatures, action.payload],
+                additionalPrice: state.additionalPrice - action.payload.price
             };
-
-        case "REMOVE_FEATURE":
-            const featureToRemove = { ...action.payload, disabled: false };
-            const modifiedFeatures = state.car.features.filter(
-                (feature) => feature.id !== featureToRemove.id
-            );
-            return {
-                ...state,
-                additionalPrice: state.additionalPrice - featureToRemove.price,
-                car: { ...state.car, features: modifiedFeatures },
-                additionalFeatures: state.additionalFeatures.map((feature) => {
-                    if (action.payload.id === feature.id) {
-                        return { ...feature, disabled: false };
-                    } else {
-                        return feature;
-                    }
-                }),
-            };
-
         default:
             return state;
     }
-};
+}
+
+export default carReducer;
